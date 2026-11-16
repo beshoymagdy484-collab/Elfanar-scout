@@ -58,8 +58,8 @@ return H('حضور يوم الجمعة',arD(S.date))+`<main><div class="r" style
 ${ks.map(k=>{const m=S.att[day+'_'+k.id];return `<div class="c r"><div class="f"><b>${esc(k.name)}</b><small>#${k.code} · ${esc(k.school_year||'—')} · ${esc(pn(k.patrol_id))}</small></div>${B('حاضر','mark',m===true?'ok':'',`data-k="${k.id}" data-v="1"`)}${B('غائب','mark',m===false?'no':'',`data-k="${k.id}" data-v="0"`)}</div>`}).join('')||em('مفيش أولاد لسه. ضيف أول ولد من صفحة الأولاد.')}</main>`}
 
 function kidsV(){const s=S.q.trim(),ks=kidsA().filter(k=>!s||k.name.includes(s)||String(k.code).includes(s));
-return H('الأولاد',kidsA().length+' ولد')+`<main><input id="q" data-f="q" placeholder="ابحث بالاسم أو الرقم التعريفي" value="${esc(S.q)}">
-${ks.map(k=>`<div class="c r"><div class="f"><b>${esc(k.name)}</b><small>#${k.code} · ${esc(k.school_year||'—')}</small></div>${T(pn(k.patrol_id))}${B('فتح','open','',`data-k="${k.id}"`)}</div>`).join('')}${B('إضافة ولد جديد','add','au w')}
+return H('الأولاد',kidsA().length+' ولد')+`<main>${B('+ إضافة ولد جديد','add','au w','style="margin-bottom:10px"')}<input id="q" data-f="q" placeholder="ابحث بالاسم أو الرقم التعريفي" value="${esc(S.q)}">
+${ks.map(k=>`<div class="c r"><div class="f"><b>${esc(k.name)}</b><small>#${k.code} · ${esc(k.school_year||'—')}</small></div>${T(pn(k.patrol_id))}${B('فتح','open','',`data-k="${k.id}"`)}</div>`).join('')}
 ${admin?`<div class="c" style="margin-top:12px"><b>أنواع الشارات</b><div class="r" style="margin:8px 0">${S.bt.map(b=>T(b.name)).join('')}</div><input data-f="bn" placeholder="نوع شارة جديد" value="${esc(S.form.bn||'')}">${B('إضافة نوع شارة','addbadge','w')}</div>`:''}</main>`}
 
 function kidV(id){const k=S.kids.find(x=>x.id===id);if(!k)return H('الولد')+`<main>${em('جارٍ التحميل…')}${B('رجوع','back','w')}</main>`;
@@ -69,24 +69,25 @@ return H(esc(k.name),'الرقم التعريفي #'+k.code)+`<main><div class="
 <div class="c"><div class="r"><b class="f">الفولار</b>${T(k.has_scarf?'معاه':'مش معاه',k.has_scarf,'scarfq',`data-k="${k.id}"`)}</div><b style="display:block;margin-top:10px">الشارات (اضغط لتعليم الشارة)</b><div class="r" style="margin-top:8px">${S.bt.map(b=>T(b.name,have.includes(b.id),'badge',`data-k="${k.id}" data-b="${b.id}"`)).join('')}</div></div>
 <div class="c"><div class="r"><b class="f">حضور الشهر ده</b><b style="color:var(--g)">${pr} من ${days.length} جمعات</b></div><div class="r" style="margin-top:8px;gap:6px">${days.map(d=>`<i class="sq ${mine(d)===true?'':'n'}"></i>`).join('')}</div><small>${vd}</small></div>
 <div class="r">${k.phone?`<a class="b ok f" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="tel:${esc(k.phone)}">اتصال</a>`:''}${B('تعديل','edit','au f',`data-k="${k.id}"`)}</div>
-<div class="r" style="margin-top:10px">${B('رجوع','back','f')}${admin?B('إيقاف الولد','arch','no f',`data-k="${k.id}"`):''}</div></main>`}
+<div class="r" style="margin-top:10px">${B('رجوع','back','f')}${admin?B('مسح الولد','delkid','no f',`data-k="${k.id}"`):''}</div></main>`}
 
 function formV(){const f=S.form,chip=(fl,v,l)=>T(l,f[fl]===v,'pick',`data-f="${fl}" data-v="${v}"`),inp=(k,p,t='')=>`<input data-f="${k}" placeholder="${p}" value="${esc(f[k]||'')}" ${t}>`;
 return H(f.id?'تعديل بيانات الولد':'ولد جديد')+`<main>${inp('name','الاسم')}${inp('age','السن','inputmode="numeric"')}${inp('yr','السنة الدراسية')}${inp('addr','العنوان')}${inp('phone','رقم التليفون','inputmode="tel"')}
 <div class="r" style="margin-bottom:12px"><b class="f">معاه فولار؟</b>${T(f.scarf?'معاه':'مش معاه',f.scarf,'scarf')}</div>
+<b>الشارات</b><div class="r" style="margin:8px 0 12px">${S.bt.map(b=>T(b.name,(f.badges||[]).includes(b.id),'fbadge',`data-b="${b.id}"`)).join('')||'<small>ضيف أنواع الشارات الأول من صفحة الأولاد</small>'}</div>
 <b>الطليعة</b><div class="r" style="margin:8px 0 12px">${S.patrols.map(p=>chip('patrol',p.id,p.name)).join('')||'<small>ضيف طلايع الأول من صفحة الطلايع</small>'}</div>
 <b>الخادم المسؤول عن افتقاده</b><div class="r" style="margin:8px 0 12px">${Object.entries(S.people).map(([i,n])=>chip('servant',i,n)).join('')}</div>
 <div class="r">${B('حفظ','save','ok f')}${B('إلغاء','cancel','f')}</div></main>`}
 
-function patV(){return H('الطلايع','كل ولد مسجل في طليعة ولها مسؤول')+`<main>${S.patrols.map(p=>`<div class="c r"><div class="f"><b>طليعة ${esc(p.name)}</b><small>المسؤول: ${esc(p.leader_name||'—')}</small></div>${T(kidsA().filter(k=>k.patrol_id===p.id).length+' أولاد')}${admin?B('حذف','delpat','no',`data-p="${p.id}"`):''}</div>`).join('')||em('مفيش طلايع لسه.')}
-${admin?`<div class="c"><b>إضافة طليعة</b><div style="height:8px"></div><input data-f="pn" placeholder="اسم الطليعة" value="${esc(S.form.pn||'')}"><input data-f="pl" placeholder="اسم المسؤول عنها" value="${esc(S.form.pl||'')}">${B('إضافة طليعة جديدة','addpat','au w')}</div>`:''}</main>`}
+function patV(){const form=admin?`<div class="c"><b>إضافة طليعة</b><div style="height:8px"></div><input data-f="pn" placeholder="اسم الطليعة" value="${esc(S.form.pn||'')}"><input data-f="pl" placeholder="اسم المسؤول عنها" value="${esc(S.form.pl||'')}">${B('+ إضافة طليعة','addpat','au w')}</div>`:'<small style="margin-bottom:10px">إضافة ومسح الطلايع للأدمن بس</small>';
+return H('الطلايع','كل ولد مسجل في طليعة ولها مسؤول')+`<main>${form}${S.patrols.map(p=>`<div class="c r"><div class="f"><b>طليعة ${esc(p.name)}</b><small>المسؤول: ${esc(p.leader_name||'—')}</small></div>${T(kidsA().filter(k=>k.patrol_id===p.id).length+' أولاد')}${admin?B('مسح','delpat','no',`data-p="${p.id}"`):''}</div>`).join('')||em('مفيش طلايع لسه.')}</main>`}
 
 function visV(){const v=k=>S.vis[k.id],ks=kidsA();
 if(!admin){const my=ks.filter(k=>k.servant_id===me.id);return H('افتقاد أولادي','للخادم · الشهر الحالي')+`<main><div class="c"><b>افتقدت ${my.filter(v).length} من ${my.length} أولاد</b><small>متابعتك دي ظاهرة للأدمن</small></div>${my.map(k=>`<div class="c r"><div class="f"><b>${esc(k.name)}</b><small>#${k.code}${k.phone?' · '+esc(k.phone):''}</small></div>${v(k)?T('تم الافتقاد',1,'unvisit',`data-v="${v(k).id}"`):B('تم الافتقاد','visit','au',`data-k="${k.id}"`)}</div>`).join('')||em('مفيش أولاد متسجلين عليك لسه.')}</main>`}
 const gs=[...Object.entries(S.people).map(([id,n])=>({id,n})),{id:'',n:'بدون خادم'}].map(g=>({...g,ks:ks.filter(k=>(k.servant_id||'')===g.id)})).filter(g=>g.ks.length),dn=ks.filter(v).length;
 return H('متابعة الافتقاد','للأدمن · الشهر الحالي')+`<main><div class="c"><b>تم افتقاد ${dn} من ${ks.length}</b><small>${ks.length-dn} أولاد لسه محدش افتقدهم</small></div>${gs.map(g=>{const d=g.ks.filter(v),l=g.ks.filter(k=>!v(k));return `<div class="c"><div class="r"><div class="f"><b>${esc(g.n)}</b><small>افتقد ${d.length} من ${g.ks.length}</small></div>${T(l.length?l.length+' باقي':'تم',!l.length)}</div>${d.length?`<small style="margin-top:8px">افتقدهم: ${d.map(k=>esc(k.name)+' ('+esc(nm(v(k).servant_id))+')').join('، ')}</small>`:''}${l.length?`<small style="margin-top:6px;color:var(--rd)">لم يُفتقدوا: ${l.map(k=>esc(k.name)).join('، ')}</small>`:''}</div>`}).join('')}</main>`}
 
-function chV(){return H('الصيحات الكشفية',admin?'للأدمن: إضافة وتعديل':'')+`<main>${S.chants.map(c=>`<div class="c"><div class="r"><b class="f">${esc(c.title)}</b>${admin?B('تعديل','chedit','',`data-c="${c.id}"`):''}</div><small style="white-space:pre-wrap">${esc(c.body)}</small></div>`).join('')||em('مفيش صيحات لسه.')}${admin?B('إضافة صيحة جديدة','chnew','au w'):''}</main>`}
+function chV(){return H('الصيحات الكشفية')+`<main>${admin?B('+ إضافة صيحة جديدة','chnew','au w','style="margin-bottom:10px"'):'<small style="margin-bottom:10px">إضافة ومسح الصيحات للأدمن بس</small>'}${S.chants.map(c=>`<div class="c"><div class="r"><b class="f">${esc(c.title)}</b>${admin?B('تعديل','chedit','',`data-c="${c.id}"`)+B('مسح','chdelq','no',`data-c="${c.id}"`):''}</div><small style="white-space:pre-wrap">${esc(c.body)}</small></div>`).join('')||em('مفيش صيحات لسه.')}</main>`}
 function chF(){const f=S.form;return H(f.id?'تعديل الصيحة':'صيحة جديدة')+`<main><input data-f="t" placeholder="اسم الصيحة" value="${esc(f.t||'')}"><textarea data-f="b" rows="8" placeholder="نص الصيحة">${esc(f.b||'')}</textarea><div class="r">${B('حفظ','chsave','ok f')}${B('إلغاء','cancel','f')}</div>${f.id?B('حذف الصيحة','chdel','no w','style="margin-top:10px"'):''}</main>`}
 
 function render(){const v=S.view;
@@ -98,23 +99,23 @@ if(S.tab==='kids'&&!v&&S.q&&document.activeElement===document.body){const i=$('#
 const W=f=>async d=>{await f(d);await load()};
 const A={tab:d=>{S.tab=d.t;S.view=null;S.form={}},dd:d=>{S.date=add(S.date,+d.n)},open:d=>{S.view={t:'kid',id:d.k}},back:()=>{S.view=null},
 cancel:()=>{S.view=S.form.id&&S.form.name!==undefined?{t:'kid',id:S.form.id}:null;S.form={}},add:()=>{S.form={};S.view={t:'form'}},
-edit:d=>{const k=S.kids.find(x=>x.id===d.k);S.form={id:k.id,name:k.name,age:k.age||'',yr:k.school_year||'',addr:k.address||'',phone:k.phone||'',scarf:!!k.has_scarf,patrol:k.patrol_id||'',servant:k.servant_id||''};S.view={t:'form'}},
-pick:d=>{S.form[d.f]=S.form[d.f]===d.v?'':d.v},scarf:()=>{S.form.scarf=!S.form.scarf},
+edit:d=>{const k=S.kids.find(x=>x.id===d.k);S.form={id:k.id,name:k.name,age:k.age||'',yr:k.school_year||'',addr:k.address||'',phone:k.phone||'',scarf:!!k.has_scarf,patrol:k.patrol_id||'',servant:k.servant_id||'',badges:bOf(k)};S.view={t:'form'}},
+pick:d=>{S.form[d.f]=S.form[d.f]===d.v?'':d.v},scarf:()=>{S.form.scarf=!S.form.scarf},fbadge:d=>{const a=S.form.badges||[];S.form.badges=a.includes(d.b)?a.filter(x=>x!==d.b):[...a,d.b]},
 chnew:()=>{S.form={};S.view={t:'chant'}},chedit:d=>{const c=S.chants.find(x=>x.id===d.c);S.form={id:c.id,t:c.title,b:c.body};S.view={t:'chant'}},
 async login(){const{error}=await sb.auth.signInWithPassword({email:(S.form.em||'').trim(),password:S.form.pw||''});if(error)return toast('الإيميل أو كلمة السر غلط');S.form={};await boot()},
 async out(){await sb.auth.signOut();me=null;ready=false;S.loaded=true;S.view=null},
 mark:W(d=>q(sb.from('attendance').upsert({kid_id:d.k,day:fmt(S.date),present:d.v==='1'},{onConflict:'kid_id,day'}))),
 save:W(async()=>{const f=S.form;if(!f.name?.trim())throw{message:'اكتب اسم الولد'};const row={name:f.name.trim(),age:+f.age||null,school_year:f.yr||null,address:f.addr||null,phone:f.phone||null,has_scarf:!!f.scarf,patrol_id:f.patrol||null,servant_id:f.servant||null};
- const r=await q(f.id?sb.from('kids').update(row).eq('id',f.id).select('id').single():sb.from('kids').insert(row).select('id').single());S.form={};S.view={t:'kid',id:r.id}}),
+ const r=await q(f.id?sb.from('kids').update(row).eq('id',f.id).select('id').single():sb.from('kids').insert(row).select('id').single());const want=f.badges||[],old=f.id?bOf({id:f.id}):[],rm=old.filter(x=>!want.includes(x)),ad=want.filter(x=>!old.includes(x));if(rm.length)await q(sb.from('kid_badges').delete().eq('kid_id',r.id).in('badge_id',rm));if(ad.length)await q(sb.from('kid_badges').insert(ad.map(b=>({kid_id:r.id,badge_id:b}))));S.form={};S.view={t:'kid',id:r.id}}),
 badge:W(d=>q(bOf({id:d.k}).includes(d.b)?sb.from('kid_badges').delete().eq('kid_id',d.k).eq('badge_id',d.b):sb.from('kid_badges').insert({kid_id:d.k,badge_id:d.b}))),
 scarfq:W(d=>q(sb.from('kids').update({has_scarf:!S.kids.find(x=>x.id===d.k).has_scarf}).eq('id',d.k))),
-arch:W(async d=>{if(confirm('إيقاف الولد؟ مش هيظهر في الحضور بعد كده.')){await q(sb.from('kids').update({active:false}).eq('id',d.k));S.view=null}}),
+delkid:W(async d=>{if(confirm('مسح الولد نهائياً مع كل حضوره وبياناته؟')){await q(sb.from('kids').delete().eq('id',d.k));S.view=null}}),
 visit:W(d=>q(sb.from('visits').insert({kid_id:d.k,servant_id:me.id}))),unvisit:W(d=>q(sb.from('visits').delete().eq('id',d.v))),
 addpat:W(async()=>{const f=S.form;if(!f.pn?.trim())throw{message:'اكتب اسم الطليعة'};await q(sb.from('patrols').insert({name:f.pn.trim(),leader_name:(f.pl||'').trim()}));S.form={}}),
 delpat:W(async d=>{if(confirm('حذف الطليعة؟'))await q(sb.from('patrols').delete().eq('id',d.p))}),
 addbadge:W(async()=>{const n=(S.form.bn||'').trim();if(n){await q(sb.from('badge_types').insert({name:n}));S.form={}}}),
 chsave:W(async()=>{const f=S.form;if(!f.t?.trim())throw{message:'اكتب اسم الصيحة'};const row={title:f.t.trim(),body:f.b||''};await q(f.id?sb.from('chants').update(row).eq('id',f.id):sb.from('chants').insert(row));S.form={};S.view=null}),
-chdel:W(async()=>{if(confirm('حذف الصيحة؟')){await q(sb.from('chants').delete().eq('id',S.form.id));S.form={};S.view=null}})};
+chdelq:W(async d=>{if(confirm('مسح الصيحة؟'))await q(sb.from('chants').delete().eq('id',d.c))}),chdel:W(async()=>{if(confirm('حذف الصيحة؟')){await q(sb.from('chants').delete().eq('id',S.form.id));S.form={};S.view=null}})};
 
 document.addEventListener('click',async e=>{const el=e.target.closest('[data-a]');if(!el||!A[el.dataset.a])return;
 try{await A[el.dataset.a]({...el.dataset})}catch(x){toast(x.message||'حصل خطأ')}render()});
