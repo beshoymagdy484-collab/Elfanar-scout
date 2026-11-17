@@ -73,7 +73,7 @@ return H(esc(k.name),'الرقم التعريفي #'+k.code)+`<main><div class="
 <div class="r" style="margin-top:10px">${B('رجوع','back','f')}${admin?B('مسح الولد','delkid','no f',`data-k="${k.id}"`):''}</div></main>`}
 
 function formV(){const f=S.form,chip=(fl,v,l)=>T(l,f[fl]===v,'pick',`data-f="${fl}" data-v="${v}"`),inp=(k,p,t='')=>`<input data-f="${k}" placeholder="${p}" value="${esc(f[k]||'')}" ${t}>`;
-return H(f.id?'تعديل بيانات الولد':'ولد جديد')+`<main>${inp('name','الاسم')}${inp('age','السن','inputmode="numeric"')}${inp('yr','السنة الدراسية')}${inp('addr','العنوان')}${inp('phone','رقم التليفون','inputmode="tel"')}${inp('conf','اسم أب الاعتراف')}
+return H(f.id?'تعديل بيانات الولد':'ولد جديد')+`<main>${inp('code','الرقم التعريفي (اكتبه بنفسك)')}${inp('name','الاسم')}${inp('age','السن','inputmode="numeric"')}${inp('yr','السنة الدراسية')}${inp('addr','العنوان')}${inp('phone','رقم التليفون','inputmode="tel"')}${inp('conf','اسم أب الاعتراف')}
 <div class="r" style="margin-bottom:12px"><b class="f">معاه فولار؟</b>${T(f.scarf?'معاه':'مش معاه',f.scarf,'scarf')}</div>
 <b>الشارات</b><div class="r" style="margin:8px 0 12px">${S.bt.map(b=>T(b.name,(f.badges||[]).includes(b.id),'fbadge',`data-b="${b.id}"`)).join('')||'<small>ضيف أنواع الشارات الأول من صفحة الأولاد</small>'}</div>
 <b>الطليعة</b><div class="r" style="margin:8px 0 12px">${S.patrols.map(p=>chip('patrol',p.id,p.name)).join('')||'<small>ضيف طلايع الأول من صفحة الطلايع</small>'}</div>
@@ -113,13 +113,13 @@ async function exportXlsx(isAuto){
 const W=f=>async d=>{await f(d);await load();touch()};
 const A={xl:()=>exportXlsx(false),autobk:()=>{try{localStorage.setItem('ab',auto()?'0':'1')}catch(e){}},tab:d=>{S.tab=d.t;S.view=null;S.form={}},dd:d=>{S.date=add(S.date,+d.n)},open:d=>{S.view={t:'kid',id:d.k}},back:()=>{S.view=null},
 cancel:()=>{S.view=S.form.id&&S.form.name!==undefined?{t:'kid',id:S.form.id}:null;S.form={}},add:()=>{S.form={};S.view={t:'form'}},
-edit:d=>{const k=S.kids.find(x=>x.id===d.k);S.form={id:k.id,name:k.name,age:k.age||'',yr:k.school_year||'',addr:k.address||'',phone:k.phone||'',conf:k.confession_father||'',scarf:!!k.has_scarf,patrol:k.patrol_id||'',servant:k.servant_id||'',badges:bOf(k)};S.view={t:'form'}},
+edit:d=>{const k=S.kids.find(x=>x.id===d.k);S.form={id:k.id,code:k.code||'',name:k.name,age:k.age||'',yr:k.school_year||'',addr:k.address||'',phone:k.phone||'',conf:k.confession_father||'',scarf:!!k.has_scarf,patrol:k.patrol_id||'',servant:k.servant_id||'',badges:bOf(k)};S.view={t:'form'}},
 pick:d=>{S.form[d.f]=S.form[d.f]===d.v?'':d.v},scarf:()=>{S.form.scarf=!S.form.scarf},fbadge:d=>{const a=S.form.badges||[];S.form.badges=a.includes(d.b)?a.filter(x=>x!==d.b):[...a,d.b]},
 chnew:()=>{S.form={};S.view={t:'chant'}},chedit:d=>{const c=S.chants.find(x=>x.id===d.c);S.form={id:c.id,t:c.title,b:c.body};S.view={t:'chant'}},
 async login(){const{error}=await sb.auth.signInWithPassword({email:(S.form.em||'').trim(),password:S.form.pw||''});if(error)return toast('الإيميل أو كلمة السر غلط');S.form={};await boot()},
 async out(){await sb.auth.signOut();me=null;ready=false;S.loaded=true;S.view=null},
 mark:W(d=>q(sb.from('attendance').upsert({kid_id:d.k,day:fmt(S.date),present:d.v==='1'},{onConflict:'kid_id,day'}))),
-save:W(async()=>{const f=S.form;if(!f.name?.trim())throw{message:'اكتب اسم الولد'};const row={name:f.name.trim(),age:+f.age||null,school_year:f.yr||null,address:f.addr||null,phone:f.phone||null,confession_father:f.conf||null,has_scarf:!!f.scarf,patrol_id:f.patrol||null,servant_id:f.servant||null};
+save:W(async()=>{const f=S.form;if(!f.name?.trim())throw{message:'اكتب اسم الولد'};const code=(f.code||'').trim();if(!code)throw{message:'اكتب الرقم التعريفي'};if(S.kids.some(k=>String(k.code)===code&&k.id!==f.id))throw{message:'الرقم التعريفي ده مستخدم لولد تاني'};const row={code,name:f.name.trim(),age:+f.age||null,school_year:f.yr||null,address:f.addr||null,phone:f.phone||null,confession_father:f.conf||null,has_scarf:!!f.scarf,patrol_id:f.patrol||null,servant_id:f.servant||null};
  const r=await q(f.id?sb.from('kids').update(row).eq('id',f.id).select('id').single():sb.from('kids').insert(row).select('id').single());const want=f.badges||[],old=f.id?bOf({id:f.id}):[],rm=old.filter(x=>!want.includes(x)),ad=want.filter(x=>!old.includes(x));if(rm.length)await q(sb.from('kid_badges').delete().eq('kid_id',r.id).in('badge_id',rm));if(ad.length)await q(sb.from('kid_badges').insert(ad.map(b=>({kid_id:r.id,badge_id:b}))));S.form={};S.view={t:'kid',id:r.id}}),
 badge:W(d=>q(bOf({id:d.k}).includes(d.b)?sb.from('kid_badges').delete().eq('kid_id',d.k).eq('badge_id',d.b):sb.from('kid_badges').insert({kid_id:d.k,badge_id:d.b}))),
 scarfq:W(d=>q(sb.from('kids').update({has_scarf:!S.kids.find(x=>x.id===d.k).has_scarf}).eq('id',d.k))),
